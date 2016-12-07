@@ -11,13 +11,16 @@ namespace Puzzle1
     {
         static void Main(string[] args)
         {
-            string inputFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"../../input.txt");
+            string inputFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../input.txt");
             string inputs = File.ReadAllText(inputFilePath);
 
             Location currentLocation = new Location();
+            Location EasterHQ = null;
             CompassDirection currentDirection = CompassDirection.North;
 
-            foreach(var input in inputs.Split(','))
+            List<Location> previouslyVisitedLocations = new List<Location>(); ;
+
+            foreach (var input in inputs.Split(','))
             {
                 string instruction = input.Trim();
                 char leftOrRight = instruction[0];
@@ -36,22 +39,33 @@ namespace Puzzle1
                     throw new Exception("leftOrRight invalid.");
                 }
 
-                followDirections(currentDirection, distance, currentLocation);
+                for (int i = 0; i < distance; i++)
+                {
+                    followDirections(currentDirection, 1, currentLocation);
+                    if (EasterHQ == null && previouslyVisitedLocations.Contains(currentLocation))
+                    {
+                        Console.WriteLine(string.Format("We've been here before! ({0},{1})", currentLocation.X, currentLocation.Y));
+                        EasterHQ = new Location()
+                        {
+                            X = currentLocation.X,
+                            Y = currentLocation.Y
+                        };
+                    }
+                    previouslyVisitedLocations.Add(new Location()
+                    {
+                        X = currentLocation.X,
+                        Y = currentLocation.Y
+                    });
+                }
             }
 
-            Console.WriteLine(string.Format("x:{0} y:{1}",currentLocation.X, currentLocation.Y));
+            Console.WriteLine("Final Location: " + currentLocation.ToString());
             Console.WriteLine(string.Format("Shortest Distance:{0}", Math.Abs(currentLocation.X) + Math.Abs(currentLocation.Y)));
+
+            Console.WriteLine("Easter Location: " + EasterHQ.ToString());
+            Console.WriteLine(string.Format("Shortest Distance:{0}", Math.Abs(EasterHQ.X) + Math.Abs(EasterHQ.Y)));
             Console.ReadLine();
-            //if(leftOrRight == "L")
-            //{
-            //}
-            //else if(leftOrRight == "R")
-            //{
-            //}
-            //else
-            //{
-            //    throw new ArgumentException("leftOrRight invalid.");
-            //}
+
         }
 
         private static CompassDirection turn(bool turnLeft, CompassDirection currentDirection)
@@ -59,7 +73,7 @@ namespace Puzzle1
 
             if (currentDirection == CompassDirection.North)
             {
-                if(turnLeft)
+                if (turnLeft)
                 {
                     return CompassDirection.West;
                 }
@@ -70,7 +84,7 @@ namespace Puzzle1
             }
             else if (currentDirection == CompassDirection.South)
             {
-                if(turnLeft)
+                if (turnLeft)
                 {
                     return CompassDirection.East;
                 }
@@ -81,7 +95,7 @@ namespace Puzzle1
             }
             else if (currentDirection == CompassDirection.West)
             {
-                if(turnLeft)
+                if (turnLeft)
                 {
                     return CompassDirection.South;
                 }
@@ -92,7 +106,7 @@ namespace Puzzle1
             }
             else if (currentDirection == CompassDirection.East)
             {
-                if(turnLeft)
+                if (turnLeft)
                 {
                     return CompassDirection.North;
                 }
@@ -109,29 +123,30 @@ namespace Puzzle1
 
         private static void followDirections(CompassDirection direction, int distance, Location currentLocation)
         {
-            if(direction == CompassDirection.North)
+            if (direction == CompassDirection.North)
             {
-                currentLocation.Y += distance; 
+                currentLocation.Y += distance;
             }
-            else if(direction == CompassDirection.South)
+            else if (direction == CompassDirection.South)
             {
                 currentLocation.Y -= distance;
             }
-            else if(direction == CompassDirection.West)
+            else if (direction == CompassDirection.West)
             {
                 currentLocation.X += distance;
             }
-            else if(direction == CompassDirection.East)
+            else if (direction == CompassDirection.East)
             {
                 currentLocation.X -= distance;
-            }else
+            }
+            else
             {
                 throw new Exception("Unknown direction");
             }
         }
     }
 
-    internal class Location
+    internal class Location : IEquatable<Location>
     {
         public int X { get; set; }
         public int Y { get; set; }
@@ -141,6 +156,16 @@ namespace Puzzle1
             this.X = 0;
             this.Y = 0;
         }
+
+        public override string ToString()
+        {
+            return string.Format("({0},{1})", this.X, this.Y);
+        }
+
+        public bool Equals(Location other)
+        {
+            return other.X == this.X && other.Y == this.Y;
+        }
     }
 
     internal enum CompassDirection
@@ -148,6 +173,6 @@ namespace Puzzle1
         North,
         East,
         South,
-        West,
+        West
     }
 }
