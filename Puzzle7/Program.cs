@@ -42,7 +42,6 @@ namespace Puzzle7
             {
                 // Walk through the address and look for ABBA
                 bool hasAbba = false;
-                bool hasAbbaWithinSquareBrackets = false;
                 bool withinSquareBrackets = false;
                 for (int i = 0; i < Address.Length - 3; i++)
                 {
@@ -59,14 +58,14 @@ namespace Puzzle7
 
                     if (Address[i] == Address[i + 3] && Address[i + 1] == Address[i + 2] && Address[i] != Address[i + 1])
                     {
-                        hasAbba = true;
                         if (withinSquareBrackets)
                         {
-                            hasAbbaWithinSquareBrackets = true;
+                            return false;
                         }
+                        hasAbba = true;
                     }
                 }
-                return hasAbba && !hasAbbaWithinSquareBrackets;
+                return hasAbba;
             }
         }
         public bool SupportsSSL {
