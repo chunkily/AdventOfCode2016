@@ -1,0 +1,18 @@
+﻿The first floor contains a promethium generator and a promethium-compatible microchip.
+The second floor contains a cobalt generator, a curium generator, a ruthenium generator, and a plutonium generator.
+The third floor contains a cobalt-compatible microchip, a curium-compatible microchip, a ruthenium-compatible microchip, and a plutonium-compatible microchip.
+The fourth floor contains nothing relevant.
+
+F4  
+F3               CoM     CmM     RuM     PuM
+F2           CoG     CmG     RuG     PuG
+F1 E PmG PmM
+
+Rules:
+If a chip is ever left in the same area as another generator, and it's not connected to its own generator, the chip will be fried.
+Elevator can carry at most yourself and two generators or microchips in any combination.
+The elevator will only function if it contains at least one RTG or microchip.
+you and the elevator will start on the first floor.
+
+There are only 4 ^ 11 = 4,194,304 different states available. (Not to mention several of them are invalid.)
+Hopefully this means I am able to track them all.
