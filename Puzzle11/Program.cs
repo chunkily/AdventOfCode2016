@@ -24,22 +24,33 @@ namespace Puzzle11
                     new FacilityItem(Element.Ru,false, 3),
                     new FacilityItem(Element.Pu,true, 2),
                     new FacilityItem(Element.Pu,false, 3),
-                    //new FacilityItem(Element.El,true, 1),
-                    //new FacilityItem(Element.El,false, 1),
-                    //new FacilityItem(Element.Di,true, 1),
-                    //new FacilityItem(Element.Di,false, 1)
-
+                    new FacilityItem(Element.El,true, 1),
+                    new FacilityItem(Element.El,false, 1),
+                    new FacilityItem(Element.Di,true, 1),
+                    new FacilityItem(Element.Di,false, 1)
                 }
             };
 
             int steps = 1;
 
             List<Solution> solutions = new List<Solution>();
-            solutions.Add(new Solution() {
+            solutions.Add(new Solution()
+            {
                 Moves = new List<Move>(),
                 CurrentState = facility,
             });
-            HashSet<Facility> PreviousStates = new HashSet<Facility>(new FacilityEqualityComparer());
+
+            int[] elements = new int[] {
+                (int)Element.Pm,
+                (int)Element.Co,
+                (int)Element.Cm,
+                (int)Element.Ru,
+                (int)Element.Pu,
+                (int)Element.El,
+                (int)Element.Di
+            };
+
+            HashSet<Facility> PreviousStates = new HashSet<Facility>(new FacilityEqualityComparer(elements));
             PreviousStates.Add(facility);
 
             // Perform a breadth first search for the answer.
@@ -72,13 +83,12 @@ namespace Puzzle11
                 Console.WriteLine("Tracking Previous States " + PreviousStates.Count);
                 steps++;
             }
-
             var shortestSolution = solutions.First(s => s.Solved);
 
             int step = 1;
-            foreach(var move in shortestSolution.Moves)
+            foreach (var move in shortestSolution.Moves)
             {
-                Console.WriteLine(step + ")" +move.ToString());
+                Console.WriteLine(step + ")" + move.ToString());
                 move.NextState.Print();
                 step++;
             }
@@ -244,25 +254,6 @@ namespace Puzzle11
             }
         }
 
-        public bool Equals(Facility other)
-        {
-            if(this.ElevatorFloor != other.ElevatorFloor)
-            {
-                return false;
-            }
-            else
-            {
-                for (int i = 0; i < Items.Count; i++)
-                {
-                    if(Items[i].Floor != other.Items[i].Floor)
-                    {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
-
         public void Print()
         {
             for(int floorNum = 4;floorNum>0;floorNum--)
@@ -296,15 +287,44 @@ namespace Puzzle11
 
     class FacilityEqualityComparer : EqualityComparer<Facility>
     {
+        public FacilityEqualityComparer(int[] elements)
+        {
+            _elements = elements;
+        }
+
+        int[] _elements; 
+
         public override bool Equals(Facility x, Facility y)
         {
-            return x.Equals(y);
+            if(x.ElevatorFloor != y.ElevatorFloor)
+            {
+                return false;
+            }
+            else
+            {
+                // F2 E HM HG                                F2 E       LM LG
+                // F1         LM LG  is the same compared to F1   HM HG 
+                int[] s = new int[_elements.Length];
+                int[] r = new int[_elements.Length];
+                foreach (int element in _elements)
+                {
+                    s[element] = x.Items.Single(i => (int)i.Element == element && i.IsGenerator).Floor * 4 +
+                                 x.Items.Single(i => (int)i.Element == element && !i.IsGenerator).Floor;
+                    r[element] = y.Items.Single(i => (int)i.Element == element && i.IsGenerator).Floor * 4 +
+                                 y.Items.Single(i => (int)i.Element == element && !i.IsGenerator).Floor;
+                }
+                return s.Except(r).Count() == 0;
+            }
         }
 
         public override int GetHashCode(Facility obj)
         {
-            return (obj.ElevatorFloor + 
-                string.Join("",(obj.Items.Select(o=>o.ToString())))).GetHashCode();
+            int g = obj.Items.Where(i => i.IsGenerator).Sum(i=>i.Floor); // between 4 and 20 for 5 elements
+            int maxG = _elements.Count() * 4;
+            int m = obj.Items.Where(i => !i.IsGenerator).Sum(i=>i.Floor) * (maxG + 1); // between 21 and 110 for 5 elements
+            int maxM = _elements.Count() * (maxG + 1);
+            int e = obj.ElevatorFloor * (maxM + 1);
+            return g + m + e;
         }
     }
 
